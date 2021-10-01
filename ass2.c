@@ -69,6 +69,8 @@ int main(int argc, char *argv[]) {
     print_head();
     print_board(board);
 
+    player_move(board, CELL_BPIECE);
+    print_board(board);
     return EXIT_SUCCESS;            // exit program with the success code
 }
 

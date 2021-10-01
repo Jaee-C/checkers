@@ -12,12 +12,27 @@
 #define COMP_ACTIONS        10      // number of computed actions
 #define ROW_SEP             "+---+---+---+---+---+---+---+---+"
 #define DELIMITER_LEN       37
+#define ALPHA_TO_INT        65
+#define NUM_TO_INT          49
+#define ERROR1              "Source cell is outside of the board."
+#define ERROR2              "Target cell is outside of the board."
+#define ERROR3              "Source cell is empty."
+#define ERROR4              "Target cell is not empty."
+#define ERROR5              "Source cell holds opponent’s piece/tower."
+#define ERROR6              "Illegal action."
 
 /* one type definition from my sample solution -------------------------------*/
 typedef unsigned char board_t[BOARD_SIZE][BOARD_SIZE];  // board type
+
+typedef struct {
+    int row, col;
+} locn_t;
 
 void print_head(void);
 void board_init(board_t);
 int cell_has_piece(int row, int col);
 void print_board(board_t);
 void print_delimiter(void);
+void player_move(board_t board, char color);
+int get_input(char action[]);
+void check_input_error(board_t board, locn_t source, locn_t target, char c);
