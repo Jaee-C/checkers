@@ -20,5 +20,4 @@ void print_head(void);
 void board_init(board_t);
 int cell_has_piece(int row, int col);
 void print_board(board_t);
-void print_row_sep(void);
 void print_delimiter(void);

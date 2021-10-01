@@ -48,19 +48,15 @@ void print_board(board_t board) {
     }
     printf("\n");
     for (int row = 0; row < BOARD_SIZE; row++) {
-        print_row_sep();
+        printf("   %s\n", ROW_SEP);
         printf("%2d | ", row + 1);
         for (int col = 0; col < BOARD_SIZE; col++) {
             printf("%c | ", board[row][col]);
         }
         printf("\n");
     }
-    print_row_sep();
-    print_delimiter();
-}
-
-void print_row_sep(void) {
     printf("   %s\n", ROW_SEP);
+    print_delimiter();
 }
 
 void print_delimiter(void) {
