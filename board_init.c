@@ -28,6 +28,9 @@ void board_init(board_t board) {
             }
         }
     }
+
+    print_head();
+    print_board(board);
 }
 
 int cell_has_piece(int row, int col) {

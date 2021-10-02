@@ -14,13 +14,17 @@
 #define DELIMITER_LEN       37
 #define ALPHA_TO_INT        65
 #define NUM_TO_INT          49
-#define ERROR1              "Source cell is outside of the board."
-#define ERROR2              "Target cell is outside of the board."
-#define ERROR3              "Source cell is empty."
-#define ERROR4              "Target cell is not empty."
-#define ERROR5              "Source cell holds opponent’s piece/tower."
-#define ERROR6              "Illegal action."
+// #define ERROR1              "Source cell is outside of the board."
+// #define ERROR2              "Target cell is outside of the board."
+// #define ERROR3              "Source cell is empty."
+// #define ERROR4              "Target cell is not empty."
+// #define ERROR5              "Source cell holds opponent’s piece/tower."
+// #define ERROR6              "Illegal action."
 #define MOVELEN             5       // length of input for a move
+#define SOURCE_COL          0
+#define SOURCE_ROW          1
+#define TARGET_COL          3
+#define TARGET_ROW          4
 
 /* one type definition from my sample solution -------------------------------*/
 typedef unsigned char board_t[BOARD_SIZE][BOARD_SIZE];  // board type
@@ -35,6 +39,7 @@ int cell_has_piece(int, int);
 void print_board(board_t);
 void print_delimiter(void);
 void input_move(board_t, char );
+void process_input(char *, locn_t *, locn_t *);
 int cost(board_t);
 int get_input(char action[]);
 void check_input_error(board_t, locn_t, locn_t, char);

@@ -1,4 +1,4 @@
-#include<stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include "board.h"
@@ -8,19 +8,19 @@ void input_move(board_t board, char color) {
     char action[MOVELEN+1];
     int input_len, count = 0;
 
-    while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
-        source.col = action[0] - ALPHA_TO_INT;
-        source.row = action[1] - NUM_TO_INT;
-        target.col = action[3] - ALPHA_TO_INT;
-        target.row = action[4] - NUM_TO_INT;
+    while ((input_len = get_input(action)) != EOF) {
+        if (input_len == MOVELEN) {
+            process_input(action, &source, &target);
+            check_input_error(board, source, target, color);
+        }
 
-        check_input_error(board, source, target, color);
-
+        // Update board array to reflect new move
         board[target.row][target.col] = board[source.row][source.col];
         board[source.row][source.col] = '.';
 
         count++;
 
+        // Output updated board after every input
         if (color == CELL_BPIECE) {
             printf("BLACK ");
             color = CELL_WPIECE;
@@ -34,6 +34,15 @@ void input_move(board_t board, char color) {
     }
 }
 
+/* Process string into integers indicating source and target row/column */
+void process_input(char *action, locn_t *s, locn_t *t) {
+    s->col = action[SOURCE_COL] - ALPHA_TO_INT;
+    s->row = action[SOURCE_ROW] - NUM_TO_INT;
+    t->col = action[TARGET_COL] - ALPHA_TO_INT;
+    t->row = action[TARGET_ROW] - NUM_TO_INT;
+}
+
+/* Calculate cost of the board */
 int cost(board_t board) {
     int total = 0;
     for (int row = 0; row < BOARD_SIZE; row++) {
@@ -53,6 +62,7 @@ int cost(board_t board) {
     return total;
 }
 
+/* Reads user input from stdin, returns length of string read or EOF */
 int get_input(char action[]) {
     char c;
     int len=0;
@@ -65,38 +75,39 @@ int get_input(char action[]) {
     }
 
     action[len++] = c;
-    while((c = getchar()) != EOF && c != '\n' && len < 6) {
+    while((c = getchar()) != EOF && c != '\n' && len <= MOVELEN) {
         action[len++] = c;
     }
     action[len] = '\0';
     return len;
 }
 
+/* Checks for invalid moves */
 void check_input_error(board_t board, locn_t source, locn_t target, char c) {
     if (source.col >= BOARD_SIZE || source.row >= BOARD_SIZE) {
-        printf("ERROR: %s\n", ERROR1);
+        printf("ERROR: Source cell is outside of the board.\n");
         exit(EXIT_FAILURE);
     } else if (target.col >= BOARD_SIZE || target.row >= BOARD_SIZE) {
-        printf("ERROR: %s\n", ERROR2);
+        printf("ERROR: Target cell is outside of the board.\n");
         exit(EXIT_FAILURE);
     } else if (board[source.row][source.col] == CELL_EMPTY) {
-        printf("ERROR: %s\n", ERROR3);
+        printf("ERROR: Source cell is empty.\n");
         exit(EXIT_FAILURE);
     } else if (board[target.row][target.col] != CELL_EMPTY) {
-        printf("ERROR: %s\n", ERROR4);
+        printf("ERROR: Target cell is not empty.\n");
         exit(EXIT_FAILURE);
     } else if (board[source.row][source.col] != c) {
-        printf("ERROR: %s\n", ERROR5);
+        printf("ERROR: Source cell holds opponent’s piece/tower.\n");
         exit(EXIT_FAILURE);
     }
 
     if (c == 'b' && ((source.row - 1 != target.row) || 
                      (abs(source.col - target.col) != 1))) {
-        printf("ERROR: %s\n", ERROR6);
+        printf("ERROR: Illegal action.\n");
         exit(EXIT_FAILURE);
     } else if (c == 'w' && ((source.row + 1 != target.row) || 
                             (abs(source.col - target.col) != 1))) {
-        printf("ERROR: %s\n", ERROR6);
+        printf("ERROR: Illegal action.\n");
         exit(EXIT_FAILURE);
     }
 }

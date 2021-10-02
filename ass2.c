@@ -66,9 +66,6 @@ int main(int argc, char *argv[]) {
 
     board_init(board);
 
-    print_head();
-    print_board(board);
-
     input_move(board, CELL_BPIECE);
     print_board(board);
     return EXIT_SUCCESS;            // exit program with the success code
