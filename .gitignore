@@ -2,3 +2,4 @@ Makefile
 ./ass2
 *.o
 out.txt
+diff.txt
