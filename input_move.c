@@ -3,38 +3,25 @@
 #include <ctype.h>
 #include "board.h"
 
-void input_move(board_t board, char color) {
-    locn_t source, target;
-    char action[MOVELEN+1];
-    int input_len, count = 0;
+/* Update board array to reflect new move */
+void update_board(board_t board, locn_t s, locn_t t) {
+    board[t.row][t.col] = board[s.row][s.col];
+    board[s.row][s.col] = '.';
+}
 
-    while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
-        // Stops when non-move input ('A' or 'P') is read
-        process_input(action, &source, &target);
-        check_input_error(board, source, target, color);
-
-        // Check if there is any capture in current move
-        capture_check(board, source, target);
-
-        // Update board array to reflect new move
-        board[target.row][target.col] = board[source.row][source.col];
-        board[source.row][source.col] = '.';
-
-        count++;
-
-        // Output updated board after every input
-        print_delimiter();
-        if (color == CELL_BPIECE) {
-            printf("BLACK ");
-            color = CELL_WPIECE;
-        } else if (color == CELL_WPIECE) {
-            printf("WHITE ");
-            color = CELL_BPIECE;
-        }
-        printf("ACTION #%d: %s\n", count, action);
-        printf("BOARD COST: %d\n", cost(board));
-        print_board(board);
+/* Prints the information for a move */
+void print_move(board_t board, int count, char *action, char *c) {
+    print_delimiter();
+    if (*c == CELL_BPIECE) {
+        printf("BLACK ");
+        *c = CELL_WPIECE;
+    } else if (*c == CELL_WPIECE) {
+        printf("WHITE ");
+        *c = CELL_BPIECE;
     }
+    printf("ACTION #%d: %s\n", count, action);
+    printf("BOARD COST: %d\n", cost(board));
+    print_board(board);
 }
 
 /* Process string into integers indicating source and target row/column */
@@ -117,11 +104,11 @@ void capture_check(board_t board, locn_t source, locn_t target) {
                abs(source.row - target.row) == 2) {
         tower_capture(board, source, target, source_cell);
     } else if (source_cell == CELL_BPIECE && ((source.row - 1 != target.row) ||
-                                              (abs(source.col - target.col) != 1))) {
+               (abs(source.col - target.col) != 1))) {
         printf("ERROR: Illegal action.\n");
         exit(EXIT_FAILURE);
     } else if (source_cell == CELL_WPIECE && ((source.row + 1 != target.row) ||
-                                              (abs(source.col - target.col) != 1))) {
+               (abs(source.col - target.col) != 1))) {
         printf("ERROR: Illegal action.\n");
         exit(EXIT_FAILURE);
     }

@@ -63,10 +63,28 @@
 int main(int argc, char *argv[]) {
     // YOUR IMPLEMENTATION OF STAGES 0-2
     board_t board;
+    locn_t source, target;
+    char action[MOVELEN+1], color = CELL_BPIECE;
+    int input_len, count = 0;
 
     board_init(board);
 
-    input_move(board, CELL_BPIECE);
+    while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
+        // loop stops when non-move input ('A' or 'P') is read
+
+        process_input(action, &source, &target);
+        check_input_error(board, source, target, color);
+
+        // is there any capture in current move?
+        capture_check(board, source, target);
+
+        update_board(board, source, target);
+
+        count++;
+
+        // Output updated board after every input
+        print_move(board, count, action, &color);
+    }
     return EXIT_SUCCESS;            // exit program with the success code
 }
 
