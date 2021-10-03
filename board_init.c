@@ -59,7 +59,6 @@ void print_board(board_t board) {
         printf("\n");
     }
     printf("   %s\n", ROW_SEP);
-    print_delimiter();
 }
 
 void print_delimiter(void) {

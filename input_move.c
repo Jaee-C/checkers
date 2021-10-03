@@ -8,11 +8,10 @@ void input_move(board_t board, char color) {
     char action[MOVELEN+1];
     int input_len, count = 0;
 
-    while ((input_len = get_input(action)) != EOF) {
-        if (input_len == MOVELEN) {
-            process_input(action, &source, &target);
-            check_input_error(board, source, target, color);
-        }
+    while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
+        // Stops when non-move input ('A' or 'P') is read
+        process_input(action, &source, &target);
+        check_input_error(board, source, target, color);
 
         // Update board array to reflect new move
         board[target.row][target.col] = board[source.row][source.col];
@@ -21,6 +20,7 @@ void input_move(board_t board, char color) {
         count++;
 
         // Output updated board after every input
+        print_delimiter();
         if (color == CELL_BPIECE) {
             printf("BLACK ");
             color = CELL_WPIECE;
@@ -84,30 +84,55 @@ int get_input(char action[]) {
 
 /* Checks for invalid moves */
 void check_input_error(board_t board, locn_t source, locn_t target, char c) {
+    char source_cell = board[source.row][source.col];
+    char target_cell = board[target.row][target.col];
     if (source.col >= BOARD_SIZE || source.row >= BOARD_SIZE) {
         printf("ERROR: Source cell is outside of the board.\n");
         exit(EXIT_FAILURE);
     } else if (target.col >= BOARD_SIZE || target.row >= BOARD_SIZE) {
         printf("ERROR: Target cell is outside of the board.\n");
         exit(EXIT_FAILURE);
-    } else if (board[source.row][source.col] == CELL_EMPTY) {
+    } else if (source_cell == CELL_EMPTY) {
         printf("ERROR: Source cell is empty.\n");
         exit(EXIT_FAILURE);
-    } else if (board[target.row][target.col] != CELL_EMPTY) {
+    } else if (target_cell != CELL_EMPTY) {
         printf("ERROR: Target cell is not empty.\n");
         exit(EXIT_FAILURE);
-    } else if (board[source.row][source.col] != c) {
+    } else if (tolower(source_cell) != c) {
         printf("ERROR: Source cell holds opponent’s piece/tower.\n");
         exit(EXIT_FAILURE);
     }
 
-    if (c == 'b' && ((source.row - 1 != target.row) || 
-                     (abs(source.col - target.col) != 1))) {
-        printf("ERROR: Illegal action.\n");
-        exit(EXIT_FAILURE);
-    } else if (c == 'w' && ((source.row + 1 != target.row) || 
-                            (abs(source.col - target.col) != 1))) {
-        printf("ERROR: Illegal action.\n");
-        exit(EXIT_FAILURE);
+    // if (c == 'b' && ((source.row - 1 != target.row) || 
+    //                  (abs(source.col - target.col) != 1))) {
+    //     printf("ERROR: Illegal action.\n");
+    //     exit(EXIT_FAILURE);
+    // } else if (c == 'w' && ((source.row + 1 != target.row) || 
+    //                         (abs(source.col - target.col) != 1))) {
+    //     printf("ERROR: Illegal action.\n");
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // Check for invalid steps involving capture
+    if (source_cell == CELL_BPIECE && source.row - 2 == target.row && 
+        abs(source.col - target.col) == 2) {
+        if (tolower(board[source.row-1][source.col-1]) == CELL_WPIECE) {
+            board[source.row - 1][source.col - 1] = CELL_EMPTY;
+        } else if (tolower(board[source.row-1][source.col+1]) == CELL_WPIECE) {
+            board[source.row - 1][source.col + 1] = CELL_EMPTY;
+        } else {
+            printf("ERROR: Illegal action.\n");
+            exit(EXIT_FAILURE);
+        }
+    } else if (source_cell == CELL_WPIECE && source.row + 2 == target.row && 
+               abs(source.col - target.col) == 2) {
+        if (tolower(board[source.row+1][source.col-1]) == CELL_BPIECE) {
+            board[source.row + 1][source.col - 1] = CELL_EMPTY;
+        } else if (tolower(board[source.row+1][source.col+1]) == CELL_BPIECE) {
+            board[source.row + 1][source.col + 1] = CELL_EMPTY;
+        } else {
+            printf("ERROR: Illegal action.\n");
+            exit(EXIT_FAILURE);
+        }
     }
 }
