@@ -13,6 +13,9 @@ void input_move(board_t board, char color) {
         process_input(action, &source, &target);
         check_input_error(board, source, target, color);
 
+        // Check if there is any capture in current move
+        capture_check(board, source, target);
+
         // Update board array to reflect new move
         board[target.row][target.col] = board[source.row][source.col];
         board[source.row][source.col] = '.';
@@ -102,34 +105,80 @@ void check_input_error(board_t board, locn_t source, locn_t target, char c) {
         printf("ERROR: Source cell holds opponent's piece/tower.\n");
         exit(EXIT_FAILURE);
     }
+}
 
+void capture_check(board_t board, locn_t source, locn_t target) {
+    char source_cell = board[source.row][source.col];
     // Check for invalid steps involving capture
-    if (source_cell == CELL_BPIECE && source.row - 2 == target.row && 
-        abs(source.col - target.col) == 2) {
-        if (tolower(board[source.row-1][source.col-1]) == CELL_WPIECE) {
-            board[source.row - 1][source.col - 1] = CELL_EMPTY;
-        } else if (tolower(board[source.row-1][source.col+1]) == CELL_WPIECE) {
-            board[source.row - 1][source.col + 1] = CELL_EMPTY;
-        } else {
-            printf("ERROR: Illegal action.\n");
-            exit(EXIT_FAILURE);
-        }
-    } else if (source_cell == CELL_WPIECE && source.row + 2 == target.row && 
-               abs(source.col - target.col) == 2) {
-        if (tolower(board[source.row+1][source.col-1]) == CELL_BPIECE) {
-            board[source.row + 1][source.col - 1] = CELL_EMPTY;
-        } else if (tolower(board[source.row+1][source.col+1]) == CELL_BPIECE) {
-            board[source.row + 1][source.col + 1] = CELL_EMPTY;
-        } else {
-            printf("ERROR: Illegal action.\n");
-            exit(EXIT_FAILURE);
-        }
-    } else if (source_cell == CELL_BPIECE && ((source.row - 1 != target.row) || 
-                     (abs(source.col - target.col) != 1))) {
+    if ((source_cell == CELL_WPIECE || source_cell == CELL_BPIECE) && 
+        abs(source.row-target.row) == 2) {
+        piece_capture(board, source, target, source_cell);
+    } else if ((source_cell == CELL_WTOWER || source_cell == CELL_BTOWER) &&
+               abs(source.row - target.row) == 2) {
+        tower_capture(board, source, target, source_cell);
+    } else if (source_cell == CELL_BPIECE && ((source.row - 1 != target.row) ||
+                                              (abs(source.col - target.col) != 1))) {
         printf("ERROR: Illegal action.\n");
         exit(EXIT_FAILURE);
-    } else if (source_cell == CELL_WPIECE && ((source.row + 1 != target.row) || 
-                            (abs(source.col - target.col) != 1))) {
+    } else if (source_cell == CELL_WPIECE && ((source.row + 1 != target.row) ||
+                                              (abs(source.col - target.col) != 1))) {
+        printf("ERROR: Illegal action.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void piece_capture(board_t board, locn_t s, locn_t t, char piece) {
+    char enemy;
+    int enemy_row;
+    if (piece == CELL_BPIECE) {
+        enemy = CELL_WPIECE;
+        enemy_row = s.row - 1;
+        if (enemy_row - 1 != t.row) {
+            printf("ERROR: Illegal action.\n");
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        enemy = CELL_BPIECE;
+        enemy_row = s.row + 1;
+        if (enemy_row + 1 != t.row) {
+            printf("ERROR: Illegal action.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (tolower(board[enemy_row][s.col + 1]) == enemy &&
+        s.col + 2 == t.col) {
+        board[enemy_row][s.col + 1] = CELL_EMPTY;
+    } else if (tolower(board[enemy_row][s.col - 1]) == enemy &&
+               s.col - 2 == t.col) {
+        board[enemy_row][s.col - 1] = CELL_EMPTY;
+    } else {
+        printf("ERROR: Illegal action.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void tower_capture(board_t board, locn_t s, locn_t t, char tower) {
+    char enemy;
+    if (tower == CELL_BTOWER) {
+        enemy = CELL_WPIECE;
+    } else {
+        enemy = CELL_BPIECE;
+    }
+
+    if (tolower(board[s.row + 1][s.col + 1]) == enemy &&
+        s.col + 2 == t.col) {
+        board[s.row + 1][s.col + 1] = CELL_EMPTY;
+    } else if (tolower(board[s.row + 1][s.col - 1]) == enemy &&
+               s.col - 2 == t.col) {
+        board[s.row + 1][s.col - 1] = CELL_EMPTY;
+    } else if (tolower(board[s.row - 1][s.col + 1]) == enemy &&
+        s.col + 2 == t.col) {
+        board[s.row - 1][s.col + 1] = CELL_EMPTY;
+    } else if (tolower(board[s.row - 1][s.col - 1]) == enemy &&
+               s.col - 2 == t.col) {
+        board[s.row - 1][s.col - 1] = CELL_EMPTY;
+    }else {
         printf("ERROR: Illegal action.\n");
         exit(EXIT_FAILURE);
     }

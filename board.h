@@ -43,3 +43,6 @@ void process_input(char *, locn_t *, locn_t *);
 int cost(board_t);
 int get_input(char action[]);
 void check_input_error(board_t, locn_t, locn_t, char);
+void capture_check(board_t, locn_t, locn_t);
+void piece_capture(board_t, locn_t, locn_t, char);
+void tower_capture(board_t, locn_t, locn_t, char);
