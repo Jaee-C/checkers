@@ -99,19 +99,9 @@ void check_input_error(board_t board, locn_t source, locn_t target, char c) {
         printf("ERROR: Target cell is not empty.\n");
         exit(EXIT_FAILURE);
     } else if (tolower(source_cell) != c) {
-        printf("ERROR: Source cell holds opponent’s piece/tower.\n");
+        printf("ERROR: Source cell holds opponent's piece/tower.\n");
         exit(EXIT_FAILURE);
     }
-
-    // if (c == 'b' && ((source.row - 1 != target.row) || 
-    //                  (abs(source.col - target.col) != 1))) {
-    //     printf("ERROR: Illegal action.\n");
-    //     exit(EXIT_FAILURE);
-    // } else if (c == 'w' && ((source.row + 1 != target.row) || 
-    //                         (abs(source.col - target.col) != 1))) {
-    //     printf("ERROR: Illegal action.\n");
-    //     exit(EXIT_FAILURE);
-    // }
 
     // Check for invalid steps involving capture
     if (source_cell == CELL_BPIECE && source.row - 2 == target.row && 
@@ -134,5 +124,13 @@ void check_input_error(board_t board, locn_t source, locn_t target, char c) {
             printf("ERROR: Illegal action.\n");
             exit(EXIT_FAILURE);
         }
+    } else if (source_cell == CELL_BPIECE && ((source.row - 1 != target.row) || 
+                     (abs(source.col - target.col) != 1))) {
+        printf("ERROR: Illegal action.\n");
+        exit(EXIT_FAILURE);
+    } else if (source_cell == CELL_WPIECE && ((source.row + 1 != target.row) || 
+                            (abs(source.col - target.col) != 1))) {
+        printf("ERROR: Illegal action.\n");
+        exit(EXIT_FAILURE);
     }
 }
