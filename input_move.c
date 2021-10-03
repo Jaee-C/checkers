@@ -5,8 +5,21 @@
 
 /* Update board array to reflect new move */
 void update_board(board_t board, locn_t s, locn_t t) {
-    board[t.row][t.col] = board[s.row][s.col];
-    board[s.row][s.col] = '.';
+    char cell = board[s.row][s.col];
+
+    if (cell == CELL_WPIECE && t.row == BOARD_SIZE - 1) {
+        // white piece reached the other side (last row)
+        board[t.row][t.col] = CELL_WTOWER;
+        board[s.row][s.col] = '.';
+    } else if (cell == CELL_BPIECE && t.row == 0) {
+        // black piece reached the other side (first row)
+        board[t.row][t.col] = CELL_BTOWER;
+        board[s.row][s.col] = '.';
+    } else {
+        // no promotion to tower
+        board[t.row][t.col] = board[s.row][s.col];
+        board[s.row][s.col] = '.';
+    }
 }
 
 /* Prints the information for a move */
