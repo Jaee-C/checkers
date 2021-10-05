@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
         process_input(action, &source, &target);
         check_input_error(board, source, target, color);
 
-        // is there any capture in current move?
+        // is there any capture or illegal actions?
         capture_check(board, source, target);
 
         update_board(board, source, target);

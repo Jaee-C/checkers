@@ -8,11 +8,11 @@ void update_board(board_t board, locn_t s, locn_t t) {
     char cell = board[s.row][s.col];
 
     if (cell == CELL_WPIECE && t.row == BOARD_SIZE - 1) {
-        // white piece reached the other side (last row)
+        // white piece reached the other side (last row), promote
         board[t.row][t.col] = CELL_WTOWER;
         board[s.row][s.col] = '.';
     } else if (cell == CELL_BPIECE && t.row == 0) {
-        // black piece reached the other side (first row)
+        // black piece reached the other side (first row), promote
         board[t.row][t.col] = CELL_BTOWER;
         board[s.row][s.col] = '.';
     } else {
@@ -22,7 +22,7 @@ void update_board(board_t board, locn_t s, locn_t t) {
     }
 }
 
-/* Prints the information for a move */
+/* Prints all the required information for a move */
 void print_move(board_t board, int count, char *action, char *c) {
     print_delimiter();
     if (*c == CELL_BPIECE) {
@@ -89,6 +89,7 @@ int get_input(char action[]) {
 void check_input_error(board_t board, locn_t source, locn_t target, char c) {
     char source_cell = board[source.row][source.col];
     char target_cell = board[target.row][target.col];
+
     if (source.col >= BOARD_SIZE || source.row >= BOARD_SIZE) {
         printf("ERROR: Source cell is outside of the board.\n");
         exit(EXIT_FAILURE);
@@ -107,9 +108,11 @@ void check_input_error(board_t board, locn_t source, locn_t target, char c) {
     }
 }
 
+/* Check for any capture moves or illegal actions */
 void capture_check(board_t board, locn_t source, locn_t target) {
     char source_cell = board[source.row][source.col];
-    // Check for invalid steps involving capture
+
+    // Program ends if illegal action is encountered
     if ((source_cell == CELL_WPIECE || source_cell == CELL_BPIECE) && 
         abs(source.row-target.row) == 2) {
         piece_capture(board, source, target, source_cell);
