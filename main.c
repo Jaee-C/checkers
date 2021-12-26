@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     locn_t source, target;
     char action[MOVELEN+1], color = CELL_BPIECE;
     int input_len, count = 0;
-
+ 
     board_init(board);
 
     while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
