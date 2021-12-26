@@ -1,270 +1,132 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "board.h"
 
-/* Update board array to reflect a piece/tower move */
-void update_board(board_t board, locn_t src, locn_t target) {
-    char cell = board[src.row][src.col];
-
-    if (cell == CELL_WPIECE && target.row == BOARD_SIZE - 1) {
-        // white piece reached the other side (last row), promote
-        board[target.row][target.col] = CELL_WTOWER;
-        board[src.row][src.col] = '.';
-    } else if (cell == CELL_BPIECE && target.row == 0) {
-        // black piece reached the other side (first row), promote
-        board[target.row][target.col] = CELL_BTOWER;
-        board[src.row][src.col] = '.';
-    } else {
-        // no promotion to tower, regular move
-        board[target.row][target.col] = cell;
-        board[src.row][src.col] = '.';
+// print information about the input action to stdout
+void
+print_action(board_t B, action_t* A, int turn, int is_computed) {
+    assert(A!=NULL && B!=NULL);
+    printf(STR_DELIMITER);                  // print action delimiter
+    if (is_computed) {
+        printf(STR_COMPUTED_ACTION_MARKER); // print computed action marker
     }
-}
-
-char change_player(char color) {
-    if (color == CELL_BPIECE) {
-        return CELL_WPIECE;
+    if (turn%2) {
+        printf(STR_WHITE_ACTION, turn+1);   // print white action number
     } else {
-        return CELL_BPIECE;
+        printf(STR_BLACK_ACTION, turn+1);   // print black action number
     }
+    // print action details (source and target cells)
+    printf(STR_ACTION_INFO,A->scol+CAPITAL_A,A->srow+1,
+            A->tcol+CAPITAL_A,A->trow+1);
+    printf(STR_BOARD_COST,get_board_cost(B));   // print board cost into
+    print_board(B);                             // print board configuration
 }
 
-/* Process string into integers indicating source and target row/column, 
-   then stores them into locn_t structs */
-void process_input(char *action, locn_t *src, locn_t *target) {
-    src->col = action[SOURCE_COL] - ALPHA_TO_INT;
-    src->row = action[SOURCE_ROW] - NUM_TO_INT;
-    target->col = action[TARGET_COL] - ALPHA_TO_INT;
-    target->row = action[TARGET_ROW] - NUM_TO_INT;
+// read input command from stdin
+int
+read_input_cmd(action_t *A) {
+    assert(A!=NULL);
+    char c=getchar();                       // get one character from stdin
+    if (scanf(STR_ACTION_INFO_SFX,&A->srow,(char*)&A->tcol,&A->trow)==3) {
+        // if three more inputs can be read from stdin ...
+        A->srow--; A->trow--;   // adjust source and target rows
+        A->scol=c-CAPITAL_A;    // set source column
+        A->tcol-=CAPITAL_A;     // adjust target column
+        return INPUT_ACTION;    // an action was read from stdin
+    } else if (c==CAPITAL_A) {
+        return INPUT_COMMAND_COMPUTE_ACTION;    // 'A' command was read
+    } else if (c==CAPITAL_P) {
+        return INPUT_COMMAND_PLAY;              // 'P' command was read
+    }
+    return INPUT_UNKNOWN;                       // unknown input encountered
 }
 
-int calculate_cost(board_t board) {
-    int total = 0;
-
-    // Applies formula: b + 3V - w - 3W
-    for (int row = 0; row < BOARD_SIZE; row++) {
-        for (int col = 0; col < BOARD_SIZE; col++) {
-            if (board[row][col] == CELL_BPIECE) {
-                total += COST_PIECE;
-            } else if (board[row][col] == CELL_WPIECE) {
-                total -= COST_PIECE;
-            } else if (board[row][col] == CELL_BTOWER) {
-                total += COST_TOWER;
-            } else if (board[row][col] == CELL_WTOWER) {
-                total -= COST_TOWER;
-            }
+// check action
+int
+check_action(board_t B, action_t* A, int turn) {
+    assert(A!=NULL && B!=NULL);
+    if (!is_on_board(A->srow,A->scol)) {
+        return ACTION_ILLEGAL_SRC_OUTSIDE;  // source cell is not on the board
+    } else if (!is_on_board(A->trow,A->tcol)) {
+        return ACTION_ILLEGAL_TGT_OUTSIDE;  // target cell is not on the board
+    } else if (B[A->srow][A->scol]==CELL_EMPTY) {
+        return ACTION_ILLEGAL_SRC_EMPTY;    // source cell is empty
+    } else if (B[A->trow][A->tcol]!=CELL_EMPTY) {
+        return ACTION_ILLEGAL_TGT_NOT_EMPTY;// target cell is not empty
+    } else if (turn%2 && (B[A->srow][A->scol]==CELL_BPIECE ||
+    B[A->srow][A->scol]==CELL_BTOWER)) {    // source should hold white element
+        return ACTION_ILLEGAL_SRC_HOLDS_OPPONENT;
+    } else if (!(turn%2) && (B[A->srow][A->scol]==CELL_WPIECE || 
+    B[A->srow][A->scol]== CELL_WTOWER)) {   // source should hold black element
+        return ACTION_ILLEGAL_SRC_HOLDS_OPPONENT;
+    } else if (!((abs(A->srow-A->trow)==1 && abs(A->scol-A->tcol)==1) ||
+        (abs(A->srow-A->trow)==2 && abs(A->scol-A->tcol)==2))) {
+        return ACTION_ILLEGAL_OTHER;        // non-diagonal move or capture
+    } else if (B[A->srow][A->scol]==CELL_BPIECE && A->srow-A->trow<0) {
+        return ACTION_ILLEGAL_OTHER;        // black piece cannot move down
+    } else if (B[A->srow][A->scol]==CELL_WPIECE && A->srow-A->trow>0) {
+        return ACTION_ILLEGAL_OTHER;        // white piece cannot move up
+    } else if (abs(A->srow-A->trow)==2 && abs(A->scol-A->tcol)==2) {
+        int r = (A->srow+A->trow)/2;
+        int c = (A->scol+A->tcol)/2;
+        if ((turn%2 && !(B[r][c]==CELL_BPIECE || B[r][c]==CELL_BTOWER)) ||
+            (!(turn%2) && !(B[r][c]==CELL_WPIECE || B[r][c]==CELL_WTOWER))) {
+            return ACTION_ILLEGAL_OTHER;    // wrong capture
         }
     }
 
-    return total;
+    return ACTION_LEGAL;                // action is legal
 }
 
-/* This function is adapted from getword.c written by Alistair Moffat,
-   accessed via https://people.eng.unimelb.edu.au/ammoffat/ppsaa/c/getword.c.
-
-   Reads user input from stdin and saves the string into `action`, returns 
-   length of string read or EOF. */
-int get_input(char action[]) {
-    char c;
-    int len=0;
-    while ((c = getchar()) != EOF && !isalpha(c)) {
-        // Skips through all non alphabetics
+// take input action in the input board
+void
+take_action(board_t B, action_t* A) {
+    assert(A!=NULL && B!=NULL);
+    B[A->trow][A->tcol]=B[A->srow][A->scol];    // transfer piece/tower
+    B[A->srow][A->scol]=CELL_EMPTY;             // mark source cell as empty
+    if (abs(A->srow-A->trow)==2 && abs(A->scol-A->tcol)==2) {
+        // mark cell of the captured piece or tower as empty
+        B[(A->srow+A->trow)/2][(A->scol+A->tcol)/2]=CELL_EMPTY;
     }
-    if (c == EOF) {
-        return EOF;
-    }
-    action[len++] = c;      // First character found
-    while((c = getchar()) != EOF && c != '\n' && len < MOVELEN) {
-        action[len++] = c;  // Add remaining characters
-    }
-    action[len] = '\0';     // Close off the string
-    return len;
-}
-
-/* Checks for invalid moves and remove captured piece (if any) */
-int check_error(board_t board, locn_t source, locn_t target, char c) {
-    char source_piece, target_cell;
-
-    // Check if source and target cells are within board
-    if (source.col >= BOARD_SIZE || source.row >= BOARD_SIZE ||
-        source.col < 0 || source.col < 0) {
-        return ERROR1;
-    } else if (target.col >= BOARD_SIZE || target.row >= BOARD_SIZE || 
-               target.col < 0 || target.row < 0) {
-        return ERROR2;
-    }
-    
-    // source and target cells are within board
-    source_piece = board[source.row][source.col];
-    target_cell = board[target.row][target.col];
-    if (source_piece == CELL_EMPTY) {
-        return ERROR3;
-    } else if (target_cell != CELL_EMPTY) {
-        return ERROR4;
-    } else if (tolower(source_piece) != c) {
-        return ERROR5;
-    } else if (abs(source.row - target.row) != 1) {
-        // Action indicating capture intention, check for error in capture
-        if ((source_piece == CELL_WPIECE || source_piece == CELL_BPIECE) && 
-             abs(source.row - target.row) == 2) {
-            return piece_capture(board, source, target, source_piece);
-        } else if ((source_piece == CELL_WTOWER || source_piece == CELL_BTOWER) 
-                    && abs(source.row - target.row) == 2) {
-            return tower_capture(board, source, target, source_piece);
-        } else {
-            return ERROR6;
-        }
-    // Action not capturing, check if move is valid
-    } else if (source_piece == CELL_BPIECE && ((source.row - 1 != target.row) ||
-                (abs(source.col - target.col) != 1))) {
-        return ERROR6;
-    } else if (source_piece == CELL_WPIECE && ((source.row + 1 != target.row) ||
-                (abs(source.col - target.col) != 1))) {
-        return ERROR6;
-    }
-    return 0;
-}
-
-/* Checks if a 'piece' capture move is valid. If so update board to remove 
-   captured piece; if not, return error */
-int piece_capture(board_t board, locn_t src, locn_t target, char piece) {
-    char enemy;       // enemy player color
-    int enemy_row;    // The row number in which enemy piece should be at
-    if (piece == CELL_BPIECE) {
-        enemy = CELL_WPIECE;
-        enemy_row = src.row - 1;
-        if (enemy_row - 1 != target.row) {
-            return ERROR6;
-        }
-    } else if (piece == CELL_WPIECE) {
-        enemy = CELL_BPIECE;
-        enemy_row = src.row + 1;
-        if (enemy_row + 1 != target.row) {
-            return ERROR6;
-        }
-    }
-
-    if (tolower(board[enemy_row][src.col + 1]) == enemy &&
-        src.col + 2 == target.col){
-        // Piece capturing enemy to the right
-        board[enemy_row][src.col + 1] = CELL_EMPTY;
-        return 0;
-    } else if (tolower(board[enemy_row][src.col - 1]) == enemy &&
-               src.col - 2 == target.col) {
-        // Piece capturing enemy to the left
-        board[enemy_row][src.col - 1] = CELL_EMPTY;
-        return 0;
-    } else {
-        return ERROR6;
-    }
-
-    return 0;
-}
-
-/* Checks if a 'tower' capture move is valid. If so update board to remove 
-   captured piece; if not, return error */
-int tower_capture(board_t board, locn_t src, locn_t target, char tower) {
-    char enemy;      // Enemy player color
-    if (tower == CELL_BTOWER) {
-        enemy = CELL_WPIECE;
-    } else {
-        enemy = CELL_BPIECE;
-    }
-
-    if (tolower(board[src.row + 1][src.col + 1]) == enemy &&
-        src.col + 2 == target.col) {
-        // Tower capturing enemy bottom right
-        board[src.row + 1][src.col + 1] = CELL_EMPTY;
-    } else if (tolower(board[src.row + 1][src.col - 1]) == enemy &&
-            src.col - 2 == target.col) {
-        // Tower capturing enemy bottom left
-        board[src.row + 1][src.col - 1] = CELL_EMPTY;
-    } else if (tolower(board[src.row - 1][src.col + 1]) == enemy &&
-        src.col + 2 == target.col) {
-        // Tower capturing enemy top right
-        board[src.row - 1][src.col + 1] = CELL_EMPTY;
-    } else if (tolower(board[src.row - 1][src.col - 1]) == enemy &&
-            src.col - 2 == target.col) {
-        // Tower capturing enemy top left
-        board[src.row - 1][src.col - 1] = CELL_EMPTY;
-    }else {
-        return ERROR6;
-    }
-    return 0;
-}
-
-/* Prints error codes and terminates program */
-void print_error(int err) {
-    if (err == ERROR1) {
-        printf("ERROR: Source cell is outside of the board.\n");
-        exit(EXIT_FAILURE);
-    } else if (err == ERROR2) {
-        printf("ERROR: Target cell is outside of the board.\n");
-        exit(EXIT_FAILURE);
-    } else if (err == ERROR3) {
-        printf("ERROR: Source cell is empty.\n");
-        exit(EXIT_FAILURE);
-    } else if (err == ERROR4) {
-        printf("ERROR: Target cell is not empty.\n");
-        exit(EXIT_FAILURE);
-    } else if (err == ERROR5) {
-        printf("ERROR: Source cell holds opponent's piece/tower.\n");
-        exit(EXIT_FAILURE);
-    } else if (err == ERROR6) {
-        printf("ERROR: Illegal action.\n");
-        exit(EXIT_FAILURE);
+    if (A->trow==0 && B[A->trow][A->tcol]==CELL_BPIECE) {
+        B[A->trow][A->tcol]=CELL_BTOWER;    // promote black piece to a tower
+    } else if (A->trow==BOARD_SIZE-1 && B[A->trow][A->tcol]==CELL_WPIECE) {
+        B[A->trow][A->tcol]=CELL_WTOWER;    // promote white piece to a tower
     }
 }
 
-/* Checks if a piece in `b` at `src` moving in `direction` by `player` is a
-   valid move. Returns pointer to a data_t struct of the move if valid, else 
-   return NULL */
-data_t *is_valid_move(board_t b, locn_t src, int direction, char player) {
-    int error = 0;
-    locn_t dest;
-    data_t *new;
-    new = malloc(sizeof(data_t));
-    assert(new);
-
-    duplicate_board(b, new->board);
-    dest = diagonal_move(src, direction);    // Dest is one cell away from src
-    error = check_error(new->board, src, dest, player);
-
-    if (error == ERROR4) {
-        // Dest cell has opponent piece/tower
-        // Move dest one more cell away to test for capture
-        dest = diagonal_move(dest, direction);
-        error = check_error(new->board, src, dest, player);
-    }
-
-    if (!error) {
-        // Move is valid! Save updated board into `new`
-        update_board(new->board, src, dest);
-        new->src = src;
-        new->dest = dest;
-    } else {
-        // Move is invalid, free `new`
-        free(new);
-        new = NULL;
-    }
-    return new;
+// compute the cost of the input board
+int
+get_board_cost(board_t B) {
+    assert(B!=NULL);
+    // cost can be computed in a single pass through the board, but we reuse
+    // the 'count_cells' function here :)
+    return COST_PIECE*(count_cells(B,CELL_BPIECE)-
+            count_cells(B,CELL_WPIECE))+COST_TOWER*
+            (count_cells(B,CELL_BTOWER)-count_cells(B,CELL_WTOWER));
 }
 
-/* Prints all the required information for a move - action, cost, board */
-void print_move(board_t b, int count, char *action, char player, int comp) {
-    int cost;
-    cost = calculate_cost(b);
-    printf("%s\n", DELIMITER);
-    if (comp) {    // Computed actions need to have "***" before action
-        printf("*** ");
+// print action error status to stdout
+void
+print_error(int status) {
+    if (status==ACTION_ILLEGAL_SRC_OUTSIDE) {
+        printf(STR_ERROR_1);
+    } else if (status==ACTION_ILLEGAL_TGT_OUTSIDE) {
+        printf(STR_ERROR_2);
+    } else if (status==ACTION_ILLEGAL_SRC_EMPTY) {
+        printf(STR_ERROR_3);
+    } else if (status==ACTION_ILLEGAL_TGT_NOT_EMPTY) {
+        printf(STR_ERROR_4);
+    } else if (status==ACTION_ILLEGAL_SRC_HOLDS_OPPONENT) {
+        printf(STR_ERROR_5);
+    } else if (status==ACTION_ILLEGAL_OTHER) {
+        printf(STR_ERROR_6);
     }
-    if (player == CELL_BPIECE) {
-        printf("BLACK ");
-    } else if (player == CELL_WPIECE) {
-        printf("WHITE ");
+}
+
+// check if the cell defined by row 'row' and column 'col' is on the board
+int
+is_on_board(int row, int col) {
+    if (row<0 || row>=BOARD_SIZE || col<0 || col>=BOARD_SIZE) {
+        return 0;   // cell is outside of the board
     }
-    printf("ACTION #%d: %s\n", count, action);
-    printf("BOARD COST: %d\n", cost);
-    print_board(b);
+    return 1;       // cell is on the board
 }
