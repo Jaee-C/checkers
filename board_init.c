@@ -1,72 +1,58 @@
-#include <stdio.h>
 #include "board.h"
 
-/* Fills `board` array with the initial setup, then prints the initial
-   summary of the board */
-void board_init(board_t board) {
-    int row_has_piece = 0;
-    char piece;
-
-    // Initialises and fills board array
-    for (int row = 0; row < BOARD_SIZE; row++) {
-        if (row < ROWS_WITH_PIECES) {
-            // First `ROWS_WITH_PIECES` rows are white
-            row_has_piece = 1;
-            piece = CELL_WPIECE;
-        } else if (BOARD_SIZE - ROWS_WITH_PIECES <= row) {
-            // Last `ROWS_WITH_PIECES` rows are black
-            row_has_piece = 1;
-            piece = CELL_BPIECE;
-        } else {
-            row_has_piece = 0;
-        }
-        for (int col = 0; col < BOARD_SIZE; col++) {
-            if (row_has_piece && cell_has_piece(row, col)) {
-                board[row][col] = piece;
+// initialize input board by ensuring the initial setup of the pieces
+void initialize_board(board_t B) {
+    assert(B!=NULL);
+    int row, col;
+    for (row=0; row<BOARD_SIZE; row++) {        // iterate over rows
+        for (col=0; col<BOARD_SIZE; col++) {    // iterate over columns
+            if (row<ROWS_WITH_PIECES && (row+col)%2) {
+                B[row][col] = CELL_WPIECE;      // put white piece in this cell
+            } else if (row>=BOARD_SIZE-ROWS_WITH_PIECES && (row+col)%2) {
+                B[row][col] = CELL_BPIECE;      // put black piece in this cell
             } else {
-                board[row][col] = CELL_EMPTY;
+                B[row][col] = CELL_EMPTY;       // mark cell as empty
             }
         }
     }
-
-    // Prints header and initial board
-    printf("BOARD SIZE: %dx%x\n", BOARD_SIZE, BOARD_SIZE);
-    printf("#BLACK PIECES: %d\n", BOARD_SIZE * ROWS_WITH_PIECES / 2);
-    printf("#WHITE PIECES: %d\n", BOARD_SIZE * ROWS_WITH_PIECES / 2);
-    print_board(board);
 }
 
-/* Finds out if a specific cell in the initial board should have a piece */
-int cell_has_piece(int row, int col) {
-    // even row# has pieces in odd col#, odd row# has pieces in even col#
-    if ((row % 2 == 0 && col % 2 != 0) || 
-        (row % 2 != 0 && col % 2 == 0)) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-/* Prints board with row and column numbers */
-void print_board(board_t board) {
-    char col_name = 'A';    // The name of column 1 is 'A'
-    
-    // Print column names
-    printf("  ");
-    for (int i = 0; i < BOARD_SIZE; i++) {
-        printf("   %c", col_name);    // Column headers
-        col_name++;
-    }
-    printf("\n");
-
-    // Print row numbers + content of `board`
-    for (int row = 0; row < BOARD_SIZE; row++) {
-        printf("   %s\n", ROW_SEP);    // Row separation for every new row
-        printf("%2d |", row + 1);
-        for (int col = 0; col < BOARD_SIZE; col++) {
-            printf(" %c |", board[row][col]);     // Prints individual cells
+// count the number of cells in the input board specified by the input character
+int count_cells(board_t B, char c) {
+    assert(B!=NULL);
+    int row, col, res=0;                        // initiaize result to zero
+    for (row=0; row<BOARD_SIZE; row++) {        // iterate over rows
+        for (col=0; col<BOARD_SIZE; col++) {    // iterate over columns
+            res += (B[row][col]==c);            // count cells of interest
         }
-        printf("\n");
     }
-    printf("   %s\n", ROW_SEP);
+    return res;
+}
+
+// print the input board configuration to stdout 
+void print_board(board_t B) {
+    assert(B!=NULL);
+    int row, col;
+    printf(STR_DOUBLE_SPACE);
+    for (col=0; col<BOARD_SIZE; col++) { 
+        printf(STR_BOARD_COL_TITLE,CAPITAL_A+col);  // print column headers
+    }
+    print_row_delim(BOARD_SIZE);                    // print row delimiter
+    for (row=0; row<BOARD_SIZE; row++) {            // print row content
+        printf(STR_BOARD_ROW_TITLE,row+1);
+        for (col=0; col<BOARD_SIZE; col++) {
+            printf(STR_BOARD_CELL_CONTENT,B[row][col]);
+        }
+        print_row_delim(BOARD_SIZE);                // print row delimiter
+    }
+}
+
+// print the deliminter of the chess board rows (a helper function)
+void print_row_delim(int size) {
+    int col;
+    printf(STR_BOARD_ROW_INDENT);                   // print row indentation
+    for (col=0; col<BOARD_SIZE; col++) {
+        printf(STR_BOARD_ROW_DELIM);                // print row delimiter
+    }
+    printf(STR_NEW_LINE);                           // print new line character
 }
