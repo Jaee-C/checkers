@@ -64,28 +64,39 @@ int main(int argc, char *argv[]) {
     // YOUR IMPLEMENTATION OF STAGES 0-2
     board_t board;
     locn_t source, target;
-    char action[MOVELEN+1], color = CELL_BPIECE;
-    int input_len, count = 0;
- 
+    char action[MOVELEN+1], player = CELL_BPIECE;
+    int input_len, count = 0, error = 0;
+
     board_init(board);
 
     while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
         // loop stops when non-move input ('A' or 'P') is read
+        count++;
 
         process_input(action, &source, &target);
-        check_input_error(board, source, target, color);
-
-        // is there any capture or illegal actions?
-        capture_check(board, source, target);
+        error = check_error(board, source, target, player);
+        print_error(error);
 
         update_board(board, source, target);
 
-        count++;
-
-        // Output updated board after every input
-        print_move(board, count, action, &color);
+        print_move(board, count, action, player, INPUT);
+        player = change_player(player);   // After every move, change player
     }
-    return EXIT_SUCCESS;            // exit program with the success code
+
+    if (input_len == 1 && action[0] == 'A') {
+        // Get one action
+        count++;
+        perform_next_action(board, player, count);
+    } else if (input_len == 1 && action[0] == 'P') {
+        // Get next COMP_ACTIONS actions
+        for (int i = 0; i < COMP_ACTIONS; i++) {
+            count++;
+            perform_next_action(board, player, count);
+            player = change_player(player);
+        }
+    }
+
+    return EXIT_SUCCESS;  // exit program with the success code
 }
 
 /* THE END -------------------------------------------------------------------*/
