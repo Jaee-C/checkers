@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "board.h"
+#include "../board.h"
 
 /* Update board array to reflect new move */
 void update_board(board_t board, locn_t s, locn_t t) {

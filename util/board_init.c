@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "board.h"
+#include "../board.h"
 
 void print_head(void) {
     printf("BOARD SIZE: %dx%x\n", BOARD_SIZE, BOARD_SIZE);

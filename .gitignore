@@ -1,6 +1,1 @@
-Makefile
-./ass2
-*.o
-out.txt
-diff.txt
-submit.c
+/build
