@@ -38,65 +38,56 @@
 
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
-#include <assert.h>
 #include "board.h"
 
-// /* some #define's from my sample solution ------------------------------------*/
-// #define BOARD_SIZE          8       // board size
-// #define ROWS_WITH_PIECES    3       // number of initial rows with pieces
-// #define CELL_EMPTY          '.'     // empty cell character
-// #define CELL_BPIECE         'b'     // black piece character
-// #define CELL_WPIECE         'w'     // white piece character
-// #define CELL_BTOWER         'B'     // black tower character
-// #define CELL_WTOWER         'W'     // white tower character
-// #define COST_PIECE          1       // one piece cost
-// #define COST_TOWER          3       // one tower cost
-// #define TREE_DEPTH          3       // minimax tree depth
-// #define COMP_ACTIONS        10      // number of computed actions
-
-// /* one type definition from my sample solution -------------------------------*/
-// typedef unsigned char board_t[BOARD_SIZE][BOARD_SIZE];  // board type
-
 int main(int argc, char *argv[]) {
-    // YOUR IMPLEMENTATION OF STAGES 0-2
-    board_t board;
-    locn_t source, target;
-    char action[MOVELEN+1], player = CELL_BPIECE;
-    int input_len, count = 0, error = 0;
-
-    board_init(board);
-
-    while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
-        // loop stops when non-move input ('A' or 'P') is read
-        count++;
-
-        process_input(action, &source, &target);
-        error = check_error(board, source, target, player);
-        print_error(error);
-
-        update_board(board, source, target);
-
-        print_move(board, count, action, player, INPUT);
-        player = change_player(player);   // After every move, change player
+    if (ROWS_WITH_PIECES*2>BOARD_SIZE || ROWS_WITH_PIECES<1 || BOARD_SIZE<1) {
+        return EXIT_FAILURE;    // bad initial setup (exit with failure)
     }
 
-    if (input_len == 1 && action[0] == 'A') {
-        // Get one action
-        count++;
-        perform_next_action(board, player, count);
-    } else if (input_len == 1 && action[0] == 'P') {
-        // Get next COMP_ACTIONS actions
-        for (int i = 0; i < COMP_ACTIONS; i++) {
-            count++;
-            perform_next_action(board, player, count);
-            player = change_player(player);
+    board_t B;                  // chess board
+    initialize_board(B);        // initialize board
+    // print board info to stdout (size and numbers of black and white pieces)
+    printf(STR_BOARD_SIZE,BOARD_SIZE,BOARD_SIZE);
+    printf(STR_BLACK_PIECES_STATS,count_cells(B,CELL_BPIECE));
+    printf(STR_WHITE_PIECES_STATS,count_cells(B,CELL_WPIECE));
+    print_board(B);             // print board setup to stdout
+
+    action_t A;                 // an action in the game
+    int cmd, status, turn=0;
+    while ((cmd=read_input_cmd(&A))==INPUT_ACTION) { // if action A was read
+        status=check_action(B,&A,turn);              // check the status of A
+        if (status==ACTION_LEGAL) { // if action A is legal ...
+            take_action(B,&A);      // ... take action A in board B
+            print_action(B,&A,turn,ACTION_INPUT);    // print action A info
+        } else {                    // ... otherwise (A is illegal) ...
+            print_error(status);    // print error message
+            return EXIT_FAILURE;    // exit program with failure
+        }
+        turn++;                     // proceed to the next turn
+    }
+
+    if (cmd==INPUT_COMMAND_COMPUTE_ACTION) {         // if 'A' command was read
+        if (compute_action(B,&A,turn)) {             // next action computed
+            take_action(B,&A);                       // take action A in board B
+            print_action(B,&A,turn,ACTION_COMPUTED); // print action A info
+        } else {                                     // no next action available
+            print_winner(turn);                      // print winner to stdout
         }
     }
 
-    return EXIT_SUCCESS;  // exit program with the success code
+    if (cmd==INPUT_COMMAND_PLAY) {                   // if 'P' command was read
+        int count=0;                                 // # of computed actions
+        while ((status=compute_action(B,&A,turn)) && ++count<=COMP_ACTIONS) {
+            take_action(B,&A);                       // take action A in board B
+            print_action(B,&A,turn,ACTION_COMPUTED); // print action A info
+            turn++;                                  // proceed to the next turn
+        }
+        if (status==RETURN_FAILURE && count<COMP_ACTIONS) {
+            print_winner(turn);                      // print winner to stdout
+        }
+    }
+    return EXIT_SUCCESS;            // exit program with the success code
 }
 
 /* THE END -------------------------------------------------------------------*/

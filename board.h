@@ -1,11 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
-#include <ctype.h>
 #include <assert.h>
-#include <string.h>
 
-/* some #define's from my sample solution ------------------------------------*/
+/* #define's -----------------------------------------------------------------*/
 #define BOARD_SIZE          8       // board size
 #define ROWS_WITH_PIECES    3       // number of initial rows with pieces
 #define CELL_EMPTY          '.'     // empty cell character
@@ -17,85 +15,94 @@
 #define COST_TOWER          3       // one tower cost
 #define TREE_DEPTH          3       // minimax tree depth
 #define COMP_ACTIONS        10      // number of computed actions
+#define CAPITAL_A           'A'     // upper-case 'A' character
+#define CAPITAL_P           'P'     // upper-case 'P' character
+#define NORTH               -1      // north direction of action
+#define SOUTH               1       // south direction of action
+#define EAST                1       // east direction of action
+#define WEST                -1      // west direction of action
+#define RETURN_SUCCESS      1       // function call executed successfully
+#define RETURN_FAILURE      0       // function call failed
+#define NUM_OF_DIR          4       // number of directions
 
-#define ROW_SEP             "+---+---+---+---+---+---+---+---+"
-#define DELIMITER           "====================================="
+#define ACTION_INPUT                        0   // input action
+#define ACTION_COMPUTED                     1   // computed action
+#define ACTION_LEGAL                        0   // legal action
+#define ACTION_ILLEGAL_SRC_OUTSIDE          1   // source cell outside board
+#define ACTION_ILLEGAL_TGT_OUTSIDE          2   // target cell outside board
+#define ACTION_ILLEGAL_SRC_EMPTY            3   // source cell is empty
+#define ACTION_ILLEGAL_TGT_NOT_EMPTY        4   // target cell is not empty
+#define ACTION_ILLEGAL_SRC_HOLDS_OPPONENT   5   // source cell holds opponent
+#define ACTION_ILLEGAL_OTHER                6   // other illegal action
+#define INPUT_UNKNOWN                       0   // unknown input command
+#define INPUT_ACTION                        1   // input action command
+#define INPUT_COMMAND_COMPUTE_ACTION        2   // input compute action command
+#define INPUT_COMMAND_PLAY                  3   // input play game command
 
-// ASCII conversion of char to int
-#define ALPHA_TO_INT        65      // conversion from alphabet to int
-#define NUM_TO_INT          49      // conversion from numbers to int
+#define STR_BOARD_SIZE              "BOARD SIZE: %dx%d\n"
+#define STR_BLACK_PIECES_STATS      "#BLACK PIECES: %d\n"
+#define STR_WHITE_PIECES_STATS      "#WHITE PIECES: %d\n"
+#define STR_DELIMITER               "=====================================\n"
+#define STR_COMPUTED_ACTION_MARKER  "*** "
+#define STR_WHITE_ACTION            "WHITE ACTION #%d: "
+#define STR_BLACK_ACTION            "BLACK ACTION #%d: "
+#define STR_ACTION_INFO             "%c%d-%c%d\n"
+#define STR_ACTION_INFO_SFX         "%d-%c%d\n"
+#define STR_BOARD_COST              "BOARD COST: %d\n"
+#define STR_BLACK_WIN               "BLACK WIN!\n"
+#define STR_WHITE_WIN               "WHITE WIN!\n"
+#define STR_DOUBLE_SPACE            "  "
+#define STR_NEW_LINE                "\n"
+#define STR_BOARD_COL_TITLE         "   %c"
+#define STR_BOARD_ROW_TITLE         "%2d |"
+#define STR_BOARD_ROW_INDENT        "\n   +"
+#define STR_BOARD_ROW_DELIM         "---+"
+#define STR_BOARD_CELL_CONTENT      " %c |"
 
-// Error numbers
-#define ERROR1              1
-#define ERROR2              2
-#define ERROR3              3
-#define ERROR4              4
-#define ERROR5              5
-#define ERROR6              6
+#define STR_ERROR_1         "ERROR: Source cell is outside of the board.\n"
+#define STR_ERROR_2         "ERROR: Target cell is outside of the board.\n"
+#define STR_ERROR_3         "ERROR: Source cell is empty.\n"
+#define STR_ERROR_4         "ERROR: Target cell is not empty.\n"
+#define STR_ERROR_5         "ERROR: Source cell holds opponent's piece/tower.\n"
+#define STR_ERROR_6         "ERROR: Illegal action.\n"
 
-// Indicates the formatting of an action input
-#define MOVELEN             5       // length of input for a move
-#define SOURCE_COL          0       // column number for source cell
-#define SOURCE_ROW          1       // row number for source cell
-#define TARGET_COL          3       // column number for target cell
-#define TARGET_ROW          4       // row number for target cell
+// two useful global arrays
+int LAT[NUM_OF_DIR] = {NORTH,SOUTH,SOUTH,NORTH};
+int LON[NUM_OF_DIR] = {EAST,EAST,WEST,WEST};
 
-// Directions for finding valid moves - ascending in clockwise direction
-#define NORTHEAST           0
-#define SOUTHEAST           1
-#define SOUTHWEST           2
-#define NORTHWEST           3
-
-#define INITIAL             2       // initial size of child nodes array
-#define MULTIPLIER          2
-// The factor in which the size of child nodes array increases
-
-#define INPUT               0       // move is inputted
-#define COMPUTE             1       // move is computed
-
+/* type definitions ----------------------------------------------------------*/
 typedef unsigned char board_t[BOARD_SIZE][BOARD_SIZE];  // board type
-
-typedef struct {
-    int row, col;
-} locn_t;
-
-typedef struct {
-    board_t board;
-    locn_t src, dest;   // Action
-    int cost;
-} data_t;
-
-typedef struct node node_t;
-
-struct node {
-    data_t *data;
-    node_t **child;  // Child nodes
-    int child_num;   // Current number of child nodes
-    int curr_size;   // The maximum number of child nodes the node can point to
+typedef struct action action_t;                         // action type
+struct action { // an action is determined by source and target rows and columns
+    int srow, scol;             // source row 'srow' and column 'scol'
+    int trow, tcol;             // target row 'trow' and column 'tcol'
+};
+typedef struct node node_t;   // board node (in a minimax tree) type
+struct node {                  // board node
+    action_t    act;            // action that results in this board node
+    board_t     brd;            // board that results from taking 'act'
+    int         cst;            // cost of this node in the minimax tree
+    int         num;            // upper bound on the number of reachable boards
+    node_t     **chrn;         // childrens of this node in the minimax tree
 };
 
-void board_init(board_t);
-int cell_has_piece(int, int);
-void print_board(board_t);
-void update_board(board_t, locn_t, locn_t);
-void print_move(board_t, int, char *, char, int);
-char change_player(char);
-void process_input(char *, locn_t *, locn_t *);
-int calculate_cost(board_t);
-int get_input(char action[]);
-int check_error(board_t, locn_t, locn_t, char);
-int piece_capture(board_t, locn_t, locn_t, char);
-int tower_capture(board_t, locn_t, locn_t, char);
-void print_error(int);
-node_t *make_root_node(board_t);
-void duplicate_board(board_t, board_t);
-void insert_new_node(node_t *, data_t *);
-void fill_tree(char, node_t *, int);
-data_t *is_valid_move(board_t, locn_t, int, char);
-locn_t diagonal_move(locn_t, int);
-void get_action_name(locn_t, locn_t, char *);
-void leaf_cost(node_t *, int);
-int minimax(node_t *, char, int);
-void perform_next_action(board_t board, char color, int count);
-data_t *choose_move(node_t *, int);
-void free_tree(node_t *);
+/* function prototypes -------------------------------------------------------*/
+void initialize_board(board_t);               // initialize input board
+int  count_cells(board_t,char);               // count input board cells
+void print_board(board_t);                    // print input board to stdout
+void print_row_delim(int);                    // print board deliminter
+int  read_input_cmd(action_t*);               // read command from stdin
+void print_action(board_t,action_t*,int,int); // print action info to stdout
+int  check_action(board_t,action_t*,int);     // check action
+void take_action(board_t,action_t*);          // take action in the board
+int  get_board_cost(board_t);                 // compute cost of the board
+void print_error(int);                        // print action error status
+int  is_on_board(int,int);                    // check if cell is on the board
+int  compute_action(board_t,action_t*,int);   // compute next action
+void construct_tree(node_t*,int,int,int);    // construct minimax tree
+void construct_child_node(node_t*,int,       // construct child tree node
+        action_t*,int,int);
+void free_tree(node_t*);                     // free minimax tree
+void set_tree_costs(node_t*,int,int);    // set minimax tree node costs
+void clone_board(board_t,board_t);            // clone board
+void print_winner(int);                       // print winner info
