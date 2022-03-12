@@ -137,7 +137,7 @@ int piece_capture(board_t board, locn_t src, locn_t target, char piece) {
         if (enemy_row - 1 != target.row) {
             return ERROR6;
         }
-    } else if (piece == CELL_WPIECE) {
+    } else {
         enemy = CELL_BPIECE;
         enemy_row = src.row + 1;
         if (enemy_row + 1 != target.row) {

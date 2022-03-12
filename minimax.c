@@ -106,7 +106,7 @@ locn_t diagonal_move(locn_t src, int direction) {
     } else if (direction == SOUTHWEST) {
         dest.col = src.col - 1;
         dest.row = src.row + 1;
-    } else if (direction == NORTHWEST) {
+    } else {
         dest.col = src.col - 1;
         dest.row = src.row - 1;
     }
