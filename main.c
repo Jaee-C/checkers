@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
     while ((input_len = get_input(action, player)) != EOF && input_len == MOVELEN) {
         // loop stops when non-move input ('A' or 'P') is read
         // Player's move
+        system("clear");
         count++;
 
         process_input(action, &source, &target);
@@ -26,7 +27,6 @@ int main(int argc, char *argv[]) {
 
         print_move(board, count, action, player, INPUT);
         player = change_player(player);   // After every move, change player
-        system("clear");
         count++;
         bot_move(board, &count, &player);
     }
