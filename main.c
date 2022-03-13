@@ -44,22 +44,6 @@
 #include <assert.h>
 #include "board.h"
 
-// /* some #define's from my sample solution ------------------------------------*/
-// #define BOARD_SIZE          8       // board size
-// #define ROWS_WITH_PIECES    3       // number of initial rows with pieces
-// #define CELL_EMPTY          '.'     // empty cell character
-// #define CELL_BPIECE         'b'     // black piece character
-// #define CELL_WPIECE         'w'     // white piece character
-// #define CELL_BTOWER         'B'     // black tower character
-// #define CELL_WTOWER         'W'     // white tower character
-// #define COST_PIECE          1       // one piece cost
-// #define COST_TOWER          3       // one tower cost
-// #define TREE_DEPTH          3       // minimax tree depth
-// #define COMP_ACTIONS        10      // number of computed actions
-
-// /* one type definition from my sample solution -------------------------------*/
-// typedef unsigned char board_t[BOARD_SIZE][BOARD_SIZE];  // board type
-
 int main(int argc, char *argv[]) {
     // YOUR IMPLEMENTATION OF STAGES 0-2
     board_t board;
@@ -71,6 +55,7 @@ int main(int argc, char *argv[]) {
 
     while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
         // loop stops when non-move input ('A' or 'P') is read
+        // Player's move
         count++;
 
         process_input(action, &source, &target);
@@ -81,6 +66,9 @@ int main(int argc, char *argv[]) {
 
         print_move(board, count, action, player, INPUT);
         player = change_player(player);   // After every move, change player
+
+        count++;
+        bot_move(board, &count, &player);
     }
 
     if (input_len == 1 && action[0] == 'A') {
