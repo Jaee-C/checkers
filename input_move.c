@@ -65,9 +65,17 @@ int calculate_cost(board_t board) {
 
    Reads user input from stdin and saves the string into `action`, returns 
    length of string read or EOF. */
-int get_input(char action[]) {
+int get_input(char action[], char color) {
     char c;
     int len=0;
+
+    // Displays current player prompt
+    if (color == CELL_BPIECE) {
+        printf("BLACK: ");
+    } else {
+        printf("WHITE: ");
+    }
+
     while ((c = getchar()) != EOF && !isalpha(c)) {
         // Skips through all non alphabetics
     }

@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <string.h>
 
-/* some #define's from my sample solution ------------------------------------*/
 #define BOARD_SIZE          8       // board size
 #define ROWS_WITH_PIECES    3       // number of initial rows with pieces
 #define CELL_EMPTY          '.'     // empty cell character
@@ -82,7 +81,7 @@ void print_move(board_t, int, char *, char, int);
 char change_player(char);
 void process_input(char *, locn_t *, locn_t *);
 int calculate_cost(board_t);
-int get_input(char action[]);
+int get_input(char action[], char);
 int check_error(board_t, locn_t, locn_t, char);
 int piece_capture(board_t, locn_t, locn_t, char);
 int tower_capture(board_t, locn_t, locn_t, char);
