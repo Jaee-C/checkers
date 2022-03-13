@@ -5,13 +5,21 @@
 #include "board.h"
 
 int main(int argc, char *argv[]) {
+    system("clear");
     board_t board;
     locn_t source, target;
-    char action[MOVELEN+1], player = CELL_BPIECE;
+    char action[MOVELEN+1], player = set_player();
     int input_len, count = 0, error = 0;
 
     system("clear");
     board_init(board);
+
+    // Makes sure that black goes first
+    if (player == CELL_WPIECE) {
+        player = CELL_BPIECE;
+        count++;
+        bot_move(board, &count, &player);
+    }
 
     while ((input_len = get_input(action, player)) != EOF && input_len == MOVELEN) {
         // loop stops when non-move input ('A' or 'P') is read
