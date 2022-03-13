@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
     char action[MOVELEN+1], player = CELL_BPIECE;
     int input_len, count = 0, error = 0;
 
+    system("clear");
     board_init(board);
 
     while ((input_len = get_input(action, player)) != EOF && input_len == MOVELEN) {
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
 
         print_move(board, count, action, player, INPUT);
         player = change_player(player);   // After every move, change player
-
+        system("clear");
         count++;
         bot_move(board, &count, &player);
     }
