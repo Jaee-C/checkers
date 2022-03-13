@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <string.h>
 
-/* some #define's from my sample solution ------------------------------------*/
 #define BOARD_SIZE          8       // board size
 #define ROWS_WITH_PIECES    3       // number of initial rows with pieces
 #define CELL_EMPTY          '.'     // empty cell character
