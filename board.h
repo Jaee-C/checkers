@@ -99,3 +99,4 @@ void perform_next_action(board_t board, char color, int count);
 data_t *choose_move(node_t *, int);
 void free_tree(node_t *);
 void bot_move(board_t, int*, char*);
+char set_player();

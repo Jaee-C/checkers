@@ -7,7 +7,7 @@
 int main(int argc, char *argv[]) {
     board_t board;
     locn_t source, target;
-    char action[MOVELEN+1], player = CELL_BPIECE;
+    char action[MOVELEN+1], player = set_player();
     int input_len, count = 0, error = 0;
 
     system("clear");

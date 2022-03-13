@@ -1,7 +1,7 @@
 CC = gcc
 COPTS = -Wall -std=c99 -pedantic
 
-OBJS = main.c board_init.c input_move.c minimax.c bot.c
+OBJS = main.c board_init.c input_move.c minimax.c bot.c set_player.c
 
 main: $(OBJS) Makefile
 	$(CC) $(COPTS) -o main $(OBJS)
