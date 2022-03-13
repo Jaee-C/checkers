@@ -5,6 +5,7 @@
 #include "board.h"
 
 int main(int argc, char *argv[]) {
+    system("clear");
     board_t board;
     locn_t source, target;
     char action[MOVELEN+1], player = set_player();
@@ -15,6 +16,7 @@ int main(int argc, char *argv[]) {
 
     // Makes sure that black goes first
     if (player == CELL_WPIECE) {
+        player = CELL_BPIECE;
         count++;
         bot_move(board, &count, &player);
     }

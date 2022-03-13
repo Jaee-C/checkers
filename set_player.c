@@ -1,6 +1,7 @@
 #include "board.h"
 
 char set_player() {
+    printf("Black goes first!\n");
     printf("Which color do you want to be? (white/black) ");
 
     char input[6];
