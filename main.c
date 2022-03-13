@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
 
     board_init(board);
 
-    while ((input_len = get_input(action)) != EOF && input_len == MOVELEN) {
+    while ((input_len = get_input(action, player)) != EOF && input_len == MOVELEN) {
         // loop stops when non-move input ('A' or 'P') is read
         // Player's move
         count++;
