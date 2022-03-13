@@ -13,6 +13,12 @@ int main(int argc, char *argv[]) {
     system("clear");
     board_init(board);
 
+    // Makes sure that black goes first
+    if (player == CELL_WPIECE) {
+        count++;
+        bot_move(board, &count, &player);
+    }
+
     while ((input_len = get_input(action, player)) != EOF && input_len == MOVELEN) {
         // loop stops when non-move input ('A' or 'P') is read
         // Player's move
