@@ -9,7 +9,7 @@ A classic checkers game played on the command line, built using C.
 ![During the game](src/game_state.png)
 
 ## Installation and Setup Instructions
-Clone this repository. You will need a C compiler such as [gcc](https://gcc.gnu.org/install/) or [clang](https://clang.llvm.org/get_started.html) to run the program.
+Clone this repository. You will need a C compiler such as [gcc](https://gcc.gnu.org/install/) or [clang](https://clang.llvm.org/get_started.html) to compile the program.
 
 Installation / Compilation:
 
@@ -25,7 +25,7 @@ Once you start the game, you will be prompted to choose a color, type `black`/`b
 
 Next, you will have to choose a level between 1 and 5 for your game. Now, you can start playing your game!
 
-To make a move, you have to input `<source_cell>-<target_cell>`. This input is **case-sensitive** and in all **upper case**, and the game will stop immediately if you make an invalid input or an imvalid move.
+To make a move, you have to input `<source_cell>-<target_cell>`. This input is **case-sensitive** and in all **upper-case**, and the game will stop immediately if you make an invalid input or an imvalid move.
 
 ### Game-rules
 1. Each player plays all pieces of the same color. Black open the game by making a move, then white make a move, and then players alternate their turns. In a single turn, the player either makes a move or capture.
