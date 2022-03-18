@@ -25,7 +25,7 @@ Once you start the game, you will be prompted to choose a color, type `black`/`b
 
 Next, you will have to choose a level between 1 and 5 for your game. Now, you can start playing your game!
 
-To make a move, you have to input `<source_cell>-<target_cell>`. This input is **case-sensitive**, and the game will stop immediately if you make an invalid input or an imvalid move.
+To make a move, you have to input `<source_cell>-<target_cell>`. This input is **case-sensitive** and in all **upper case**, and the game will stop immediately if you make an invalid input or an imvalid move.
 
 ### Game-rules
 1. Each player plays all pieces of the same color. Black open the game by making a move, then white make a move, and then players alternate their turns. In a single turn, the player either makes a move or capture.
