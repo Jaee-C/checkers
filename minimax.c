@@ -169,18 +169,18 @@ int minimax(node_t *root, char player, int depth) {
     }
 }
 
-void perform_next_action(board_t board, char player, int count) {
+void perform_next_action(board_t board, char player, int count, int level) {
     node_t *root = NULL;
-    int best_cost;
+    int best_cost, tree_depth = level * LEVEL_MULTIPLIER;
     data_t *best_move;
     char action[MOVELEN+1];
 
     // Create and fill tree
     root = make_root_node(board);
-    fill_tree(player, root, TREE_DEPTH);
-    leaf_cost(root, TREE_DEPTH);
+    fill_tree(player, root, tree_depth);
+    leaf_cost(root, tree_depth);
 
-    best_cost = minimax(root, player, TREE_DEPTH);
+    best_cost = minimax(root, player, tree_depth);
 
     // Program terminates when there's a winner
     if (best_cost == INT_MAX) {

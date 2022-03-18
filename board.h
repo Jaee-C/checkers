@@ -52,6 +52,11 @@
 #define INPUT               0       // move is inputted
 #define COMPUTE             1       // move is computed
 
+// sets how difficult levels are; minimax_tree_depth = level * LEVEL_MULTIPLIER
+#define LEVEL_MULTIPLIER    1
+#define MAX_LEVEL           5
+#define MIN_LEVEL           1
+
 typedef unsigned char board_t[BOARD_SIZE][BOARD_SIZE];  // board type
 
 typedef struct {
@@ -95,8 +100,9 @@ locn_t diagonal_move(locn_t, int);
 void get_action_name(locn_t, locn_t, char *);
 void leaf_cost(node_t *, int);
 int minimax(node_t *, char, int);
-void perform_next_action(board_t board, char color, int count);
+void perform_next_action(board_t board, char color, int count, int level);
 data_t *choose_move(node_t *, int);
 void free_tree(node_t *);
-void bot_move(board_t, int*, char*);
+void bot_move(board_t, int*, char*, int);
 char set_player();
+int set_level();
