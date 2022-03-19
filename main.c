@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     board_t board;
     locn_t source, target;
     char action[MOVELEN+1], player = set_player();
-    int input_len, count = 0, error = 0;
+    int input_len, count = 0, error = 0, level = set_level();
 
     system("clear");
     board_init(board);
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     if (player == CELL_WPIECE) {
         player = CELL_BPIECE;
         count++;
-        bot_move(board, &count, &player);
+        bot_move(board, &count, &player, level);
     }
 
     while ((input_len = get_input(action, player)) != EOF && input_len == MOVELEN) {
@@ -36,18 +36,18 @@ int main(int argc, char *argv[]) {
         print_move(board, count, action, player, INPUT);
         player = change_player(player);   // After every move, change player
         count++;
-        bot_move(board, &count, &player);
+        bot_move(board, &count, &player, level);
     }
 
     if (input_len == 1 && action[0] == 'A') {
         // Get one action
         count++;
-        perform_next_action(board, player, count);
+        perform_next_action(board, player, count, level);
     } else if (input_len == 1 && action[0] == 'P') {
         // Get next COMP_ACTIONS actions
         for (int i = 0; i < COMP_ACTIONS; i++) {
             count++;
-            perform_next_action(board, player, count);
+            perform_next_action(board, player, count, level);
             player = change_player(player);
         }
     }
