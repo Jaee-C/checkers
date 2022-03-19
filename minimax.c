@@ -1,5 +1,50 @@
 #include "board.h"
 
+node_t *make_root_node(board_t);
+void insert_new_node(node_t *, data_t *);
+void fill_tree(char, node_t *, int);
+void leaf_cost(node_t *, int);
+int minimax(node_t *, char, int);
+data_t *choose_move(node_t *, int);
+void free_tree(node_t *);
+
+void perform_next_action(board_t board, char player, int count, int level) {
+    node_t *root = NULL;
+    int best_cost, tree_depth = level * LEVEL_MULTIPLIER;
+    data_t *best_move;
+    char action[MOVELEN+1];
+
+    // Create and fill tree
+    root = make_root_node(board);
+    fill_tree(player, root, tree_depth);
+    leaf_cost(root, tree_depth);
+
+    best_cost = minimax(root, player, tree_depth);
+
+    // Program terminates when there's a winner
+    if (best_cost == INT_MAX) {
+        printf("BLACK WIN!\n");
+        exit(EXIT_SUCCESS);
+    } else if (best_cost == INT_MIN) {
+        printf("WHITE WIN!\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    best_move = choose_move(root, best_cost);
+
+    // Remove captured piece, then update piece move
+    check_error(board, best_move->src, best_move->dest, player);
+    update_board(board, best_move->src, best_move->dest);
+
+    // Print action
+    get_action_name(best_move->src, best_move->dest, action);
+    print_move(board, count, action, player, COMPUTE);
+
+    // Tree is not used any more, can free
+    free_tree(root);
+    root = NULL;
+}
+
 /* Creates the root node for a tree */
 node_t *make_root_node(board_t b) {
 	node_t *root = NULL;
@@ -168,44 +213,6 @@ int minimax(node_t *root, char player, int depth) {
         return root->data->cost;
     }
 }
-
-void perform_next_action(board_t board, char player, int count, int level) {
-    node_t *root = NULL;
-    int best_cost, tree_depth = level * LEVEL_MULTIPLIER;
-    data_t *best_move;
-    char action[MOVELEN+1];
-
-    // Create and fill tree
-    root = make_root_node(board);
-    fill_tree(player, root, tree_depth);
-    leaf_cost(root, tree_depth);
-
-    best_cost = minimax(root, player, tree_depth);
-
-    // Program terminates when there's a winner
-    if (best_cost == INT_MAX) {
-        printf("BLACK WIN!\n");
-        exit(EXIT_SUCCESS);
-    } else if (best_cost == INT_MIN) {
-        printf("WHITE WIN!\n");
-        exit(EXIT_SUCCESS);
-    }
-
-    best_move = choose_move(root, best_cost);
-
-    // Remove captured piece, then update piece move
-    check_error(board, best_move->src, best_move->dest, player);
-    update_board(board, best_move->src, best_move->dest);
-
-    // Print action
-    get_action_name(best_move->src, best_move->dest, action);
-    print_move(board, count, action, player, COMPUTE);
-
-    // Tree is not used any more, can free
-    free_tree(root);
-    root = NULL;
-}
-
 
 /* Find the first child node from all child nodes of `root` where cost=`cost` */
 data_t *choose_move(node_t *root, int cost) {
