@@ -106,3 +106,4 @@ void free_tree(node_t *);
 void bot_move(board_t, int*, char*, int);
 char set_player();
 int set_level();
+int get_player_num(void);
