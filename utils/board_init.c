@@ -1,29 +1,40 @@
 #include <stdio.h>
-#include "board.h"
+#include "../board.h"
 
 /* Fills `board` array with the initial setup, then prints the initial
    summary of the board */
-void board_init(board_t board) {
+void board_init(board_t board)
+{
     int row_has_piece = 0;
     char piece;
 
     // Initialises and fills board array
-    for (int row = 0; row < BOARD_SIZE; row++) {
-        if (row < ROWS_WITH_PIECES) {
+    for (int row = 0; row < BOARD_SIZE; row++)
+    {
+        if (row < ROWS_WITH_PIECES)
+        {
             // First `ROWS_WITH_PIECES` rows are white
             row_has_piece = 1;
             piece = CELL_WPIECE;
-        } else if (BOARD_SIZE - ROWS_WITH_PIECES <= row) {
+        }
+        else if (BOARD_SIZE - ROWS_WITH_PIECES <= row)
+        {
             // Last `ROWS_WITH_PIECES` rows are black
             row_has_piece = 1;
             piece = CELL_BPIECE;
-        } else {
+        }
+        else
+        {
             row_has_piece = 0;
         }
-        for (int col = 0; col < BOARD_SIZE; col++) {
-            if (row_has_piece && cell_has_piece(row, col)) {
+        for (int col = 0; col < BOARD_SIZE; col++)
+        {
+            if (row_has_piece && cell_has_piece(row, col))
+            {
                 board[row][col] = piece;
-            } else {
+            }
+            else
+            {
                 board[row][col] = CELL_EMPTY;
             }
         }
@@ -37,34 +48,42 @@ void board_init(board_t board) {
 }
 
 /* Finds out if a specific cell in the initial board should have a piece */
-int cell_has_piece(int row, int col) {
+int cell_has_piece(int row, int col)
+{
     // even row# has pieces in odd col#, odd row# has pieces in even col#
-    if ((row % 2 == 0 && col % 2 != 0) || 
-        (row % 2 != 0 && col % 2 == 0)) {
+    if ((row % 2 == 0 && col % 2 != 0) ||
+        (row % 2 != 0 && col % 2 == 0))
+    {
         return 1;
-    } else {
+    }
+    else
+    {
         return 0;
     }
 }
 
 /* Prints board with row and column numbers */
-void print_board(board_t board) {
-    char col_name = 'A';    // The name of column 1 is 'A'
-    
+void print_board(board_t board)
+{
+    char col_name = 'A'; // The name of column 1 is 'A'
+
     // Print column names
     printf("  ");
-    for (int i = 0; i < BOARD_SIZE; i++) {
-        printf("   %c", col_name);    // Column headers
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        printf("   %c", col_name); // Column headers
         col_name++;
     }
     printf("\n");
 
     // Print row numbers + content of `board`
-    for (int row = 0; row < BOARD_SIZE; row++) {
-        printf("   %s\n", ROW_SEP);    // Row separation for every new row
+    for (int row = 0; row < BOARD_SIZE; row++)
+    {
+        printf("   %s\n", ROW_SEP); // Row separation for every new row
         printf("%2d |", row + 1);
-        for (int col = 0; col < BOARD_SIZE; col++) {
-            printf(" %c |", board[row][col]);     // Prints individual cells
+        for (int col = 0; col < BOARD_SIZE; col++)
+        {
+            printf(" %c |", board[row][col]); // Prints individual cells
         }
         printf("\n");
     }
