@@ -39,3 +39,52 @@ void get_action_name(locn_t src, locn_t target, char action[]) {
     action[TARGET_ROW] = target.row + NUM_TO_INT;
     action[MOVELEN] = '\0';
 }
+
+char change_player(char color) {
+    if (color == CELL_BPIECE) {
+        return CELL_WPIECE;
+    } else {
+        return CELL_BPIECE;
+    }
+}
+
+/* Prints error codes and terminates program */
+void print_error(int err) {
+    if (err == ERROR1) {
+        printf("ERROR: Source cell is outside of the board.\n");
+        exit(EXIT_FAILURE);
+    } else if (err == ERROR2) {
+        printf("ERROR: Target cell is outside of the board.\n");
+        exit(EXIT_FAILURE);
+    } else if (err == ERROR3) {
+        printf("ERROR: Source cell is empty.\n");
+        exit(EXIT_FAILURE);
+    } else if (err == ERROR4) {
+        printf("ERROR: Target cell is not empty.\n");
+        exit(EXIT_FAILURE);
+    } else if (err == ERROR5) {
+        printf("ERROR: Source cell holds opponent's piece/tower.\n");
+        exit(EXIT_FAILURE);
+    } else if (err == ERROR6) {
+        printf("ERROR: Illegal action.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+/* Prints all the required information for a move - action, cost, board */
+void print_move(board_t b, int count, char *action, char player, int comp) {
+    int cost;
+    cost = calculate_cost(b);
+    printf("%s\n", DELIMITER);
+    if (comp) {    // Computed actions need to have "***" before action
+        printf("*** ");
+    }
+    if (player == CELL_BPIECE) {
+        printf("BLACK ");
+    } else if (player == CELL_WPIECE) {
+        printf("WHITE ");
+    }
+    printf("ACTION #%d: %s\n", count, action);
+    printf("BOARD COST: %d\n", cost);
+    print_board(b);
+}
