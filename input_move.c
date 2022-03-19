@@ -1,7 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "board.h"
+int piece_capture(board_t, locn_t, locn_t, char);
+int tower_capture(board_t, locn_t, locn_t, char);
 
 /* Update board array to reflect a piece/tower move */
 void update_board(board_t board, locn_t src, locn_t target) {
